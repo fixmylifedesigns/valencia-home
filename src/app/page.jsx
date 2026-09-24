@@ -74,21 +74,40 @@ function geocode(f) {
   return geoQueue;
 }
 
+// Public Overpass servers can be slow, so each gets a time limit before trying the next.
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter"];
+async function overpass(q) {
+  for (const url of OVERPASS) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 20000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodeURIComponent(q),
+        signal: ctrl.signal,
+      });
+      if (res.ok) return await res.json();
+    } catch {} finally { clearTimeout(timer); }
+  }
+  throw new Error("The places service is busy right now.");
+}
+
 async function fetchNearby(pt) {
   const key = `places:${pt.lat.toFixed(4)},${pt.lng.toFixed(4)}`;
   const hit = store.get(key, null);
   if (hit && Date.now() - hit.at < PLACES_TTL) return hit;
   const A = (r) => `(around:${r},${pt.lat},${pt.lng})`;
-  const q = `[out:json][timeout:25];(
-    nwr${A(1200)}["cuisine"~"japanese|sushi|ramen|izakaya",i];
-    nwr${A(1500)}["shop"]["name"~"jap[oó]n|japan|asia|oriental",i];
-    nwr${A(2500)}["cuisine"~"dominican|caribbean|latin",i];
-    nwr${A(2500)}["name"~"dominic|quisqueya|colmado|latin",i];
+  const EAT = '["amenity"~"restaurant|fast_food|cafe|bar"]';
+  const q = `[out:json][timeout:20];(
+    nwr${A(1200)}${EAT}["cuisine"~"japanese|sushi|ramen",i];
+    nwr${A(1500)}["shop"~"supermarket|convenience|deli|food"]["name"~"jap|asia|orient",i];
+    nwr${A(2500)}${EAT}["cuisine"~"dominican|caribbean|latin",i];
+    nwr${A(2500)}${EAT}["name"~"dominic|quisqueya|colmado",i];
+    nwr${A(2500)}["shop"]["name"~"dominic|quisqueya|colmado|latin",i];
     nwr${A(700)}["shop"="supermarket"];
   );out center tags;`;
-  const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: "data=" + encodeURIComponent(q) });
-  if (!res.ok) throw new Error("Places service is busy. Try again in a minute.");
-  const json = await res.json();
+  const json = await overpass(q);
   const out = { at: Date.now(), japanese: [], dominican: [], supermarket: [] };
   const seen = new Set();
   for (const el of json.elements) {
@@ -99,7 +118,7 @@ async function fetchNearby(pt) {
     seen.add(name + lat);
     const cuisine = (t.cuisine || "").toLowerCase();
     const item = { name, lat, lng, d: Math.round(metres(pt, { lat, lng })), kind: t.shop ? "shop" : t.amenity || "place" };
-    if (/japanese|sushi|ramen|izakaya/.test(cuisine) || (t.shop && /jap[oó]n|japan|asia|oriental/i.test(name))) out.japanese.push(item);
+    if (/japanese|sushi|ramen|izakaya/.test(cuisine) || (t.shop && /jap|asia|orient/i.test(name))) out.japanese.push(item);
     else if (/dominican|caribbean|latin/.test(cuisine) || /dominic|quisqueya|colmado|latin/i.test(name)) out.dominican.push(item);
     else if (t.shop === "supermarket") out.supermarket.push(item);
   }
@@ -154,15 +173,18 @@ export default function ValenciaHome() {
     });
   }, [data]);
 
-  const toggleNearby = async (f) => {
-    const isOpen = !open[f.id];
-    setOpen((o) => ({ ...o, [f.id]: isOpen }));
-    if (!isOpen || places[f.id]?.at) return;
+  const loadNearby = async (f) => {
+    setPlaces((p) => ({ ...p, [f.id]: { loading: true } }));
     const pt = coords[f.id] || (await geocode(f));
     if (!pt) { setPlaces((p) => ({ ...p, [f.id]: { error: "Couldn't find this address on the map." } })); return; }
-    setPlaces((p) => ({ ...p, [f.id]: { loading: true } }));
     try { const r = await fetchNearby(pt); setPlaces((p) => ({ ...p, [f.id]: r })); }
     catch (e) { setPlaces((p) => ({ ...p, [f.id]: { error: e.message || "Couldn't load nearby places." } })); }
+  };
+
+  const toggleNearby = (f) => {
+    const isOpen = !open[f.id];
+    setOpen((o) => ({ ...o, [f.id]: isOpen }));
+    if (isOpen && !places[f.id]?.at && !places[f.id]?.loading) loadNearby(f);
   };
 
   const listings = data?.listings || [];
@@ -282,7 +304,7 @@ export default function ValenciaHome() {
                 {open[f.id] && (
                   <div className="nearby">
                     {!p || p.loading ? <p className="muted">Looking around the block…</p>
-                      : p.error ? <p className="err">{p.error}</p>
+                      : p.error ? <p className="err">{p.error} <button className="link" onClick={() => loadNearby(f)}>Try again</button></p>
                       : CATS.map((c) => (
                         <div key={c.key} className="cat">
                           <div className="cathead">{c.emoji} {c.label} <span className="muted">({p[c.key].length})</span></div>
