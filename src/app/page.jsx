@@ -40,6 +40,11 @@ function metres(a, b) {
 
 const mapsUrl = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
 const addressOf = (f) => `${f.street || f.area}, ${f.area}, València`;
+// Direct link when we have it; otherwise a search that lands on the matching idealista listing.
+const listingUrl = (f) =>
+  f.url ||
+  "https://www.google.com/search?q=" +
+    encodeURIComponent(`site:idealista.com alquiler ${f.street ? `"${f.street.split(",")[0]}"` : f.area} València ${f.price}`);
 
 function tileFor(lat, lng, z = 16) {
   const n = 2 ** z;
@@ -298,7 +303,7 @@ export default function ValenciaHome() {
 
                 <div className="row">
                   <span className="links">
-                    {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer">View listing</a>}
+                    <a href={listingUrl(f)} target="_blank" rel="noopener noreferrer">{f.url ? "View listing" : "Find listing"}</a>
                     <a href={mapsUrl(addressOf(f))} target="_blank" rel="noopener noreferrer">Open in Maps</a>
                   </span>
                   <button className="heart" aria-pressed={isLiked} onClick={() => toggleLike(f.id)}>
