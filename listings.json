@@ -1,0 +1,15 @@
+{
+  "updatedAt": "2026-09-24T06:00:00Z",
+  "source": "manual",
+  "listings": [
+    { "id": "m1", "source": "manual", "area": "Arrancapins", "district": "Extramurs", "street": "Calle d'Honorat Juan", "price": 1100, "size": 80, "bedrooms": 3, "bathrooms": 2, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m2", "source": "manual", "area": "Sant Francesc", "district": "Ciutat Vella", "street": "Calle de Roger de Llòria", "price": 1200, "size": 70, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m3", "source": "manual", "area": "El Mercat", "district": "Ciutat Vella", "street": "Calle de Sant Ferran", "price": 1250, "size": 97, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m4", "source": "manual", "area": "Russafa", "district": "L'Eixample", "street": "", "price": 1250, "size": 70, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m5", "source": "manual", "area": "Russafa", "district": "L'Eixample", "street": "Calle de Romeu de Corbera", "price": 1300, "size": 70, "bedrooms": 2, "bathrooms": 2, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m6", "source": "manual", "area": "Russafa", "district": "L'Eixample", "street": "Calle del Literat Azorín, 43", "price": 1300, "size": 68, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m7", "source": "manual", "area": "Gran Vía", "district": "L'Eixample", "street": "Calle de Ciscar, 34", "price": 1365, "size": 54, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m8", "source": "manual", "area": "Russafa", "district": "L'Eixample", "street": "Calle de Dénia, 63", "price": 1400, "size": 75, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" },
+    { "id": "m9", "source": "manual", "area": "Arrancapins", "district": "Extramurs", "street": "Calle d'Honorat Juan", "price": 1400, "size": 114, "bedrooms": 2, "bathrooms": 1, "petsAllowed": true, "url": null, "images": [], "lat": null, "lng": null, "status": "new", "notes": "" }
+  ]
+}
